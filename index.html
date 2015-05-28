@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<title>Neuron</title>
+	<meta charset="utf-8">
+	<style>
+		body {padding:0; margin:0; background-color:#FFFFFF}
+		canvas {display: block; position: fixed;}
+	</style>
+</head>
+<body>
+<script>
+
+// inspired by Ramon y Cajal drawings
+// please note these drawings are not anatomically correct depictions of neurons, I was just looking for a cool effect :)
+
+var canvas = document.createElement('canvas'); // create the canvas
+canvas.setAttribute("id", "c");
+canvas.width = window.innerWidth; // fill the window
+canvas.height = window.innerHeight;
+document.body.appendChild(canvas);
+var ctx = canvas.getContext('2d');
+
+var neurites = []; // array holding all neurites
+
+var n = Math.max(Math.floor(Math.random()*50),3); // number of initial neurites eminating from the nucleus, randomly chosen between 3 and 49
+for (var i=0; i<n; i++) {
+	neurites.push({
+		prevPoint: {x: canvas.width/2, y: canvas.height/2},
+		direction: 2*Math.PI*Math.random(), // general direction of neurite outgrowth
+		stop: false, // true if neurite has reached its end
+		order: 1, // 1st order neurites are the original ones that start at the nucleus, new branches are 2nd order neurites, branches from those branches are 3rd order neurites, etc.
+	});
+};
+console.log('Number of initial neurites: '+n);
+
+var finishedNeurites = 0; // keep track of neurites which have reached their end
+var growCycle = 1; // keep track of how many growth cycles we've had
+function grow() {
+	for (var i=0; i < neurites.length; i++) { // iterate through all neurites and grow each one out a teeny tiny bit
+		if (neurites[i].stop == true) { // if this neurite is already finished, skip it
+			continue;
+		};
+		propagate(neurites[i]);
+	};
+	if (finishedNeurites < neurites.length) { // if not all neurites are finished yet, do another growing cycle
+		growCycle++;
+		setTimeout(grow,10);
+//		grow();
+	};
+};
+grow();
+
+function propagate(neurite) { // this is where the magic happens
+	var prevPoint = neurite.prevPoint; // where the neurite currently ends
+	var nextPoint = {x: prevPoint.x+getNormalRandom()*2+radialToVector(neurite.direction).x*(Math.random()*2), 		// get the previous point and move it in the direction the neurite is growing in,
+					 y: prevPoint.y+getNormalRandom()*2+radialToVector(neurite.direction).y*(Math.random()*2)}; 	// also add some noise by randomizing the growth rate and translating the new end point by a random value from a normal distribution with mean 0 and standard deviation 2 (I think it's 2? Not sure.)
+	ctx.beginPath(); // draw a line from the previous end point to the new end point
+	ctx.moveTo(neurite.prevPoint.x, neurite.prevPoint.y);
+	ctx.lineWidth = Math.max(getNormalRandom()*1.5+200/(growCycle+10)/neurite.order,0.5); 	// thickness of the neurite decreases with growth cycle and neurite order, with a bit of randomness in it, but is never thinner than 0.5.
+																							// note that "100/(growCycle+10)" is asymptotic and thus all neurites start off really thick (the nucleus is actually just a big blob of ridiculously thick neurites) and rapidly become thinner as they propagate outward, but never reach 0.
+	ctx.lineTo(nextPoint.x, nextPoint.y);
+	ctx.stroke();
+	neurite.prevPoint = nextPoint; // this cycle's 'next point' is the next cycle's 'previous point'
+	if (Math.random() < (0.005/neurite.order)) { // every propagation step, there is a small chance this neurite branches and spawns a new neurite
+		neurites.push({
+			prevPoint: {x: nextPoint.x, y: nextPoint.y},
+			direction: neurite.direction+getNormalRandom()*2, // basically the branching neurite has the same direction as its mother, but with a slight random offset
+			stop: false,
+			order: neurite.order+1, // the new branching neurite is one order higher than its mother
+		});
+	};
+	if (nextPoint.x < 0 || nextPoint.x > canvas.width || nextPoint.y < 0 || nextPoint.y > canvas.height // stop growing if the neurite reaches the edge of the canvas
+	|| Math.random() < (0.005*neurite.order)) { // also, there's a small chance every cycle that it just stops dead.
+		console.log('propagation stopped');
+		neurite.stop = true;
+		finishedNeurites++; // keep track of finished neurites
+	};
+};
+
+// handy-dandy helper functions:
+
+function radialToVector(radial) {
+	return {x: Math.cos(radial), y: Math.sin(radial)};
+};
+
+function getRandomInt(min, max) {
+	return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function getNormalRandom() { // returns a random number from an approximated normal distribution with mean 0 and standard deviation 1 (I think it's 1? Not sure.)
+	return ((Math.random() + Math.random() + Math.random() + Math.random() + Math.random() + Math.random()) - 3) / 3;
+};
+
+</script>
+</body>
+</html>
