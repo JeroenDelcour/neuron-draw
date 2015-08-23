@@ -1,0 +1,47 @@
+body {
+	padding: 0;
+	margin:0;
+	background-color: #F1F1D4;
+	font-family: sans-serif;
+}
+#neuron-draw {
+	width: 100vw;
+	height: 100vh;
+	overflow: hidden;
+}
+.controls {
+	display: inline-block;
+	position: absolute;
+	top: 0;
+	left: 0;
+    padding: 0.5em;
+    margin: 0.5em;
+    border: 1px solid #CCC;
+    border-radius: 1em;
+	background-color: rgba(255, 255, 255, 0.5);
+}
+form div{
+    margin-top: 0.1em;
+}
+input, textarea {
+    /* To make sure that all text fields have the same font settings
+       By default, textareas have a monospace font */
+    font: 1em sans-serif;
+
+    /* To give the same size to all text field */
+    width: 4em;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+
+    /* To harmonize the look & feel of text field border */
+    border: 1px solid #999;
+}
+label {
+    /* To make sure that all labels have the same size and are properly aligned */
+    display: inline-block;
+    width: 12em;
+    text-align: right;
+}
+.button {
+    margin-top: 0.5em;
+}
